@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ultimate Tic Tac Toe: Doom Edition</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: linear-gradient(-45deg, #1a1a1a, #333, #111, #222);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      margin: 0;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      color: #eee;
+      text-shadow: 2px 2px 5px #000;
+    }
+
+    #message {
+      margin-bottom: 20px;
+      font-size: 1.2em;
+      color: #ccc;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    #modeButtons button, #resetButton {
+      padding: 8px 16px;
+      margin: 10px;
+      font-size: 1em;
+      background: #444;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 2px 2px 5px #000;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    #modeButtons button:hover, #resetButton:hover {
+      background: #666;
+      transform: scale(1.05);
+    }
+
+    #big-board {
+      display: grid;
+      grid-template-columns: repeat(3, auto);
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .small-board {
+      display: grid;
+      grid-template-columns: repeat(3, 60px);
+      grid-template-rows: repeat(3, 60px);
+      gap: 5px;
+      border: 2px solid #666;
+      border-radius: 12px;
+      padding: 5px;
+      position: relative;
+      background: #111;
+      box-shadow: 2px 2px 5px #000 inset;
+      transition: border 0.3s;
+    }
+
+    .small-board.forced {
+      border: 3px solid #00aaff;
+      box-shadow: 0 0 10px #00aaff;
+    }
+
+    .small-board.completed {
+      background: #222;
+      opacity: 0.7;
+    }
+
+    .cell {
+      border: 1px solid #555;
+      font-size: 1.5em;
+      color: #eee;
+      background: #1a1a1a;
+      line-height: 60px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.3s, box-shadow 0.2s, transform 0.1s;
+      border-radius: 8px;
+    }
+
+    .cell:hover {
+      background: #333;
+      box-shadow: 0 0 8px #00ffaa;
+      transform: scale(1.05);
+    }
+
+    .cell.played {
+      animation: pop 0.2s ease;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .board-winner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5em;
+      color: #00ffaa;
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: rgba(0,0,0,0.5);
+      pointer-events: none;
+      text-shadow: 2px 2px 5px #000;
+    }
+
+    #confettiContainer {
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      z-index: 9999;
+    }
+
+    .confetti {
+      position: absolute;
+      animation: fall 5s linear forwards;
+      font-size: 20px;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+
+    @keyframes flashFade {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>Ultimate Tic Tac Toe: Doom Edition</h1>
+<div id="message">Current turn: ❌. Play anywhere.</div>
+<div id="modeButtons">
+  <button id="vsPlayerButton">Vs Player</button>
+  <button id="vsComputerButton">Vs Computer</button>
+</div>
+<div id="markSelection">
+  Player X Mark: <input type="text" id="playerXMark" value="❌" maxlength="2">
+  &nbsp;|&nbsp;
+  Player O Mark: <input type="text" id="playerOMark" value="⭕" maxlength="2">
+</div>
+<div id="big-board"></div>
+<button id="resetButton">Reset Game</button>
+
+<script>
+let currentPlayer = 'X';
+let forcedBoard = null;
+let gameMode = 'vsPlayer';
+let playerXMark = "❌";
+let playerOMark = "⭕";
+const boards = [];
+const boardWinners = new Array(9).fill(null);
+
+const winCombos = [
+  [0, 1, 2], [3, 4, 5], [6, 7, 8],
+  [0, 3, 6], [1, 4, 7], [2, 5, 8],
+  [0, 4, 8], [2, 4, 6]
+];
+
+function initBoards() {
+  for (let i = 0; i < 9; i++) boards[i] = new Array(9).fill(null);
+}
+
+function buildBoard() {
+  const bigBoard = document.getElementById('big-board');
+  bigBoard.innerHTML = '';
+  for (let b = 0; b < 9; b++) {
+    const smallBoardDiv = document.createElement('div');
+    smallBoardDiv.classList.add('small-board');
+    smallBoardDiv.setAttribute('data-board-index', b);
+    for (let c = 0; c < 9; c++) {
+      const cellDiv = document.createElement('div');
+      cellDiv.classList.add('cell');
+      cellDiv.setAttribute('data-cell-index', c);
+      cellDiv.addEventListener('click', handleCellClick);
+      smallBoardDiv.appendChild(cellDiv);
+    }
+    bigBoard.appendChild(smallBoardDiv);
+  }
+}
+
+function checkSmallBoardWin(bIndex) {
+  const board = boards[bIndex];
+  for (const combo of winCombos) {
+    const [a, b, c] = combo;
+    if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a];
+  }
+  if (board.every(cell => cell !== null)) return 'draw';
+  return null;
+}
+
+function checkBigBoardWin() {
+  for (const combo of winCombos) {
+    const [a, b, c] = combo;
+    if (boardWinners[a] && boardWinners[a] !== 'draw' &&
+        boardWinners[a] === boardWinners[b] && boardWinners[a] === boardWinners[c]) {
+      return boardWinners[a];
+    }
+  }
+  return null;
+}
+
+function updateForcedHighlight() {
+  document.querySelectorAll('.small-board').forEach((boardDiv, idx) => {
+    boardDiv.classList.remove('forced');
+    if (forcedBoard !== null && idx === forcedBoard && boardWinners[idx] === null) {
+      boardDiv.classList.add('forced');
+    }
+  });
+}
+
+function getAvailableMoves() {
+  const moves = [];
+  if (forcedBoard !== null && boardWinners[forcedBoard] === null) {
+    document.querySelectorAll(`.small-board[data-board-index="${forcedBoard}"] .cell`).forEach((cell, index) => {
+      if (!cell.textContent) moves.push({ boardIndex: forcedBoard, cellIndex: index, element: cell });
+    });
+  } else {
+    for (let b = 0; b < 9; b++) {
+      if (boardWinners[b] === null) {
+        document.querySelectorAll(`.small-board[data-board-index="${b}"] .cell`).forEach((cell, index) => {
+          if (!cell.textContent) moves.push({ boardIndex: b, cellIndex: index, element: cell });
+        });
+      }
+    }
+  }
+  return moves;
+}
+
+function simulateMove(move, mark) {
+  const { boardIndex, cellIndex } = move;
+  const oldCell = boards[boardIndex][cellIndex];
+  const oldWinner = boardWinners[boardIndex];
+  boards[boardIndex][cellIndex] = mark;
+  boardWinners[boardIndex] = checkSmallBoardWin(boardIndex);
+  let newForcedBoard = (boardWinners[cellIndex] === null) ? cellIndex : null;
+  return { oldCell, oldWinner, oldForcedBoard: forcedBoard, newForcedBoard };
+}
+
+function undoMove(move, state) {
+  boards[move.boardIndex][move.cellIndex] = state.oldCell;
+  boardWinners[move.boardIndex] = state.oldWinner;
+  forcedBoard = state.oldForcedBoard;
+}
+
+function minimax(depth, isMaximizingPlayer) {
+  const bigWinner = checkBigBoardWin();
+  if (bigWinner === playerOMark) return 100 - depth;
+  if (bigWinner === playerXMark) return -100 + depth;
+  if (boards.every((_, idx) => boardWinners[idx] !== null)) return 0;
+  if (depth === 0) return 0;
+
+  const moves = getAvailableMoves();
+  if (isMaximizingPlayer) {
+    let maxEval = -Infinity;
+    for (const move of moves) {
+      const temp = simulateMove(move, playerOMark);
+      forcedBoard = temp.newForcedBoard;
+      const evalScore = minimax(depth - 1, false);
+      undoMove(move, temp);
+      maxEval = Math.max(maxEval, evalScore);
+    }
+    return maxEval;
+  } else {
+    let minEval = Infinity;
+    for (const move of moves) {
+      const temp = simulateMove(move, playerXMark);
+      forcedBoard = temp.newForcedBoard;
+      const evalScore = minimax(depth - 1, true);
+      undoMove(move, temp);
+      minEval = Math.min(minEval, evalScore);
+    }
+    return minEval;
+  }
+}
+
+function computerMove() {
+  if (gameMode !== 'vsComputer' || currentPlayer !== 'O') return;
+  const moves = getAvailableMoves();
+  let bestEval = -Infinity, bestMove = null;
+
+  for (const move of moves) {
+    const temp = simulateMove(move, playerOMark);
+    forcedBoard = temp.newForcedBoard;
+    const evalScore = minimax(3, false);
+    undoMove(move, temp);
+    if (evalScore > bestEval) {
+      bestEval = evalScore;
+      bestMove = move;
+    }
+  }
+
+  if (bestMove) setTimeout(() => bestMove.element.click(), 300);
+}
+
+function flashScreen() {
+  const flash = document.createElement('div');
+  flash.style.position = 'fixed';
+  flash.style.top = 0;
+  flash.style.left = 0;
+  flash.style.width = '100%';
+  flash.style.height = '100%';
+  flash.style.background = 'rgba(255, 255, 255, 0.3)';
+  flash.style.zIndex = 9999;
+  flash.style.animation = 'flashFade 0.5s forwards';
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 500);
+}
+
+function confettiShower(mark) {
+  const container = document.createElement('div');
+  container.id = 'confettiContainer';
+  document.body.appendChild(container);
+  for (let i = 0; i < 50; i++) {
+    const confetti = document.createElement('span');
+    confetti.classList.add('confetti');
+    confetti.textContent = mark;
+    confetti.style.left = Math.random() * 100 + 'vw';
+    confetti.style.animationDelay = Math.random() + 's';
+    confetti.style.fontSize = (20 + Math.random() * 20) + 'px';
+    container.appendChild(confetti);
+  }
+  setTimeout(() => container.remove(), 5000);
+}
+
+function handleCellClick(e) {
+  const cell = e.target;
+  const smallBoardDiv = cell.parentElement;
+  const boardIndex = parseInt(smallBoardDiv.getAttribute('data-board-index'));
+  const cellIndex = parseInt(cell.getAttribute('data-cell-index'));
+
+  if ((forcedBoard !== null && boardIndex !== forcedBoard) || boardWinners[boardIndex] !== null || boards[boardIndex][cellIndex] !== null) return;
+
+  const mark = (currentPlayer === 'X') ? playerXMark : playerOMark;
+  boards[boardIndex][cellIndex] = mark;
+  cell.textContent = mark;
+  cell.classList.add('played');
+
+  const smallWinner = checkSmallBoardWin(boardIndex);
+  if (smallWinner) {
+    boardWinners[boardIndex] = smallWinner;
+    smallBoardDiv.innerHTML = `<div class='board-winner'>${smallWinner === 'draw' ? '' : smallWinner}</div>`;
+    smallBoardDiv.classList.add('completed');
+  }
+
+  const bigWinner = checkBigBoardWin();
+  if (bigWinner) {
+    document.getElementById('message').textContent = `${bigWinner} wins the game!`;
+    confettiShower(bigWinner);
+    flashScreen();
+    document.querySelectorAll('.cell').forEach(cell => cell.removeEventListener('click', handleCellClick));
+    return;
+  }
+
+  forcedBoard = (boardWinners[cellIndex] === null) ? cellIndex : null;
+  updateForcedHighlight();
+  currentPlayer = (currentPlayer === 'X') ? 'O' : 'X';
+  document.getElementById('message').textContent = `Current turn: ${(currentPlayer === 'X' ? playerXMark : playerOMark)}${forcedBoard === null ? '. Choose any active board.' : `. Must play in board ${forcedBoard + 1}.`}`;
+
+  if (gameMode === 'vsComputer' && currentPlayer === 'O') setTimeout(computerMove, 300);
+}
+
+function resetGame() {
+  playerXMark = document.getElementById('playerXMark').value;
+  playerOMark = document.getElementById('playerOMark').value;
+  if (playerXMark === playerOMark) {
+    alert("Player marks must be different!");
+    return;
+  }
+  currentPlayer = 'X';
+  forcedBoard = null;
+  boardWinners.fill(null);
+  initBoards();
+  buildBoard();
+  updateForcedHighlight();
+  document.getElementById('message').textContent = `Current turn: ${playerXMark}. Play anywhere.`;
+}
+
+document.getElementById('vsPlayerButton').addEventListener('click', () => { gameMode = 'vsPlayer'; resetGame(); });
+document.getElementById('vsComputerButton').addEventListener('click', () => { gameMode = 'vsComputer'; resetGame(); });
+document.getElementById('resetButton').addEventListener('click', resetGame);
+
+initBoards();
+buildBoard();
+updateForcedHighlight();
+</script>
+
+</body>
+</html>
