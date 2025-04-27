@@ -1,168 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Ultimate Tic Tac Toe: Doom Edition</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      background: linear-gradient(-45deg, #1a1a1a, #333, #111, #222);
-      background-size: 400% 400%;
-      animation: gradientShift 15s ease infinite;
-      margin: 0;
-      padding: 20px;
-      overflow-x: hidden;
-    }
-
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    h1 {
-      margin-bottom: 10px;
-      color: #eee;
-      text-shadow: 2px 2px 5px #000;
-    }
-
-    #message {
-      margin-bottom: 20px;
-      font-size: 1.2em;
-      color: #ccc;
-      text-shadow: 1px 1px 2px #000;
-    }
-
-    #modeButtons button, #resetButton {
-      padding: 8px 16px;
-      margin: 10px;
-      font-size: 1em;
-      background: #444;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      box-shadow: 2px 2px 5px #000;
-      transition: background 0.3s, transform 0.2s;
-    }
-
-    #modeButtons button:hover, #resetButton:hover {
-      background: #666;
-      transform: scale(1.05);
-    }
-
-    #big-board {
-      display: grid;
-      grid-template-columns: repeat(3, auto);
-      gap: 10px;
-      justify-content: center;
-      margin-top: 20px;
-    }
-
-    .small-board {
-      display: grid;
-      grid-template-columns: repeat(3, 60px);
-      grid-template-rows: repeat(3, 60px);
-      gap: 5px;
-      border: 2px solid #666;
-      border-radius: 12px;
-      padding: 5px;
-      position: relative;
-      background: #111;
-      box-shadow: 2px 2px 5px #000 inset;
-      transition: border 0.3s;
-    }
-
-    .small-board.forced {
-      border: 3px solid #00aaff;
-      box-shadow: 0 0 10px #00aaff;
-    }
-
-    .small-board.completed {
-      background: #222;
-      opacity: 0.7;
-    }
-
-    .cell {
-      border: 1px solid #555;
-      font-size: 1.5em;
-      color: #eee;
-      background: #1a1a1a;
-      line-height: 60px;
-      text-align: center;
-      cursor: pointer;
-      transition: background 0.3s, box-shadow 0.2s, transform 0.1s;
-      border-radius: 8px;
-    }
-
-    .cell:hover {
-      background: #333;
-      box-shadow: 0 0 8px #00ffaa;
-      transform: scale(1.05);
-    }
-
-    .cell.played {
-      animation: pop 0.2s ease;
-    }
-
-    @keyframes pop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-      100% { transform: scale(1); }
-    }
-
-    .board-winner {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.5em;
-      color: #00ffaa;
-      height: 100%;
-      width: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-      background: rgba(0,0,0,0.5);
-      pointer-events: none;
-      text-shadow: 2px 2px 5px #000;
-    }
-
-    #confettiContainer {
-      pointer-events: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-      z-index: 9999;
-    }
-
-    .confetti {
-      position: absolute;
-      animation: fall 5s linear forwards;
-      font-size: 20px;
-    }
-
-    @keyframes fall {
-      0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
-    }
-
-    @keyframes flashFade {
-      0% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Ultimate Tic Tac Toe: Doom Edition</title>
+<style>
+/* Doom Edition Board Styles */
+body {
+  font-family: sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+  overflow-x: hidden;
+  background: linear-gradient(-45deg, #1a1a1a, #333, #111, #222);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+h1 {
+  margin-bottom: 10px;
+  color: #eee;
+  text-shadow: 2px 2px 5px #000;
+}
+#message {
+  margin-bottom: 20px;
+  font-size: 1.2em;
+  color: #ccc;
+  text-shadow: 1px 1px 2px #000;
+}
+#modeButtons button, #themeButtons button, #resetButton {
+  padding: 8px 16px;
+  margin: 10px;
+  font-size: 1em;
+  background: #444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 2px 2px 5px #000;
+  transition: background 0.3s, transform 0.2s;
+}
+#modeButtons button:hover, #themeButtons button:hover, #resetButton:hover {
+  background: #666;
+  transform: scale(1.05);
+}
+#big-board {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+.small-board {
+  display: grid;
+  grid-template-columns: repeat(3, 60px);
+  grid-template-rows: repeat(3, 60px);
+  gap: 5px;
+  border: 2px solid #666;
+  border-radius: 12px;
+  padding: 5px;
+  position: relative;
+  background: #111;
+  box-shadow: 2px 2px 5px #000 inset;
+  transition: border 0.3s;
+}
+.small-board.forced {
+  border: 3px solid #00aaff;
+  box-shadow: 0 0 10px #00aaff;
+}
+.small-board.completed {
+  background: #222;
+  opacity: 0.7;
+}
+.cell {
+  border: 1px solid #555;
+  font-size: 1.5em;
+  color: #eee;
+  background: #1a1a1a;
+  line-height: 60px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.3s, box-shadow 0.2s, transform 0.1s;
+  border-radius: 8px;
+}
+.cell:hover {
+  background: #333;
+  box-shadow: 0 0 8px #00ffaa;
+  transform: scale(1.05);
+}
+.cell.played {
+  animation: pop 0.2s ease;
+}
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+.board-winner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5em;
+  color: #00ffaa;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(0,0,0,0.5);
+  pointer-events: none;
+  text-shadow: 2px 2px 5px #000;
+}
+#confettiContainer {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  z-index: 9999;
+}
+.confetti {
+  position: absolute;
+  animation: fall 5s linear forwards;
+  font-size: 20px;
+}
+@keyframes fall {
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+}
+#spinner {
+  display: none;
+  margin: 10px auto;
+  font-size: 30px;
+  color: #00ffaa;
+  animation: bounce 1s infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+</style>
 </head>
 <body>
-
 <h1>Ultimate Tic Tac Toe: Doom Edition</h1>
 <div id="message">Current turn: ❌. Play anywhere.</div>
 <div id="modeButtons">
   <button id="vsPlayerButton">Vs Player</button>
   <button id="vsComputerButton">Vs Computer</button>
+</div>
+<div id="themeButtons">
+  <button onclick="setTheme('sunset')">Sunset</button>
+  <button onclick="setTheme('galaxy')">Galaxy</button>
+  <button onclick="setTheme('dark')">Dark Mode</button>
 </div>
 <div id="markSelection">
   Player X Mark: <input type="text" id="playerXMark" value="❌" maxlength="2">
@@ -170,8 +164,12 @@
   Player O Mark: <input type="text" id="playerOMark" value="⭕" maxlength="2">
 </div>
 <div id="big-board"></div>
+<div id="spinner">...</div>
 <button id="resetButton">Reset Game</button>
-
+<audio id="clickSound" src="click.mp3"></audio>
+<audio id="winSound" src="win.mp3"></audio>
+<audio id="loseSound" src="lose.mp3"></audio>
+<audio id="drawSound" src="draw.mp3"></audio>
 <script>
 let currentPlayer = 'X';
 let forcedBoard = null;
@@ -180,12 +178,28 @@ let playerXMark = "❌";
 let playerOMark = "⭕";
 const boards = [];
 const boardWinners = new Array(9).fill(null);
+const spinner = document.getElementById('spinner');
+
+const clickSound = document.getElementById('clickSound');
+const winSound = document.getElementById('winSound');
+const loseSound = document.getElementById('loseSound');
+const drawSound = document.getElementById('drawSound');
 
 const winCombos = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8],
   [0, 3, 6], [1, 4, 7], [2, 5, 8],
   [0, 4, 8], [2, 4, 6]
 ];
+
+function setTheme(theme) {
+  if (theme === 'sunset') {
+    document.body.style.background = "linear-gradient(45deg, #ff9966, #ff5e62)";
+  } else if (theme === 'galaxy') {
+    document.body.style.background = "radial-gradient(circle at top left, #0d0d2b, #090979, #020024)";
+  } else {
+    document.body.style.background = "linear-gradient(-45deg, #1a1a1a, #333, #111, #222)";
+  }
+}
 
 function initBoards() {
   for (let i = 0; i < 9; i++) boards[i] = new Array(9).fill(null);
@@ -209,6 +223,39 @@ function buildBoard() {
   }
 }
 
+function playClick() {
+  clickSound.currentTime = 0;
+  clickSound.play();
+}
+function playWin() {
+  winSound.currentTime = 0;
+  winSound.play();
+}
+function playLose() {
+  loseSound.currentTime = 0;
+  loseSound.play();
+}
+function playDraw() {
+  drawSound.currentTime = 0;
+  drawSound.play();
+}
+
+function confettiShower(mark) {
+  const container = document.createElement('div');
+  container.id = 'confettiContainer';
+  document.body.appendChild(container);
+  for (let i = 0; i < 50; i++) {
+    const confetti = document.createElement('span');
+    confetti.classList.add('confetti');
+    confetti.textContent = mark;
+    confetti.style.left = Math.random() * 100 + 'vw';
+    confetti.style.animationDelay = Math.random() + 's';
+    confetti.style.fontSize = (20 + Math.random() * 20) + 'px';
+    container.appendChild(confetti);
+  }
+  setTimeout(() => container.remove(), 5000);
+}
+
 function checkSmallBoardWin(bIndex) {
   const board = boards[bIndex];
   for (const combo of winCombos) {
@@ -222,8 +269,7 @@ function checkSmallBoardWin(bIndex) {
 function checkBigBoardWin() {
   for (const combo of winCombos) {
     const [a, b, c] = combo;
-    if (boardWinners[a] && boardWinners[a] !== 'draw' &&
-        boardWinners[a] === boardWinners[b] && boardWinners[a] === boardWinners[c]) {
+    if (boardWinners[a] && boardWinners[a] !== 'draw' && boardWinners[a] === boardWinners[b] && boardWinners[a] === boardWinners[c]) {
       return boardWinners[a];
     }
   }
@@ -279,7 +325,6 @@ function minimax(depth, isMaximizingPlayer) {
   if (bigWinner === playerXMark) return -100 + depth;
   if (boards.every((_, idx) => boardWinners[idx] !== null)) return 0;
   if (depth === 0) return 0;
-
   const moves = getAvailableMoves();
   if (isMaximizingPlayer) {
     let maxEval = -Infinity;
@@ -304,55 +349,79 @@ function minimax(depth, isMaximizingPlayer) {
   }
 }
 
+function isDangerousMove(move) {
+  // Simulate our move
+  const temp = simulateMove(move, playerOMark);
+  forcedBoard = temp.newForcedBoard;
+  let danger = false;
+
+  // Find enemy moves after
+  const enemyMoves = getAvailableMoves();
+  for (const enemyMove of enemyMoves) {
+    const tempEnemy = simulateMove(enemyMove, playerXMark);
+    if (checkSmallBoardWin(enemyMove.boardIndex) === playerXMark) {
+      danger = true;
+    }
+    undoMove(enemyMove, tempEnemy);
+    if (danger) break;
+  }
+
+  undoMove(move, temp);
+  return danger;
+}
+
 function computerMove() {
-  if (gameMode !== 'vsComputer' || currentPlayer !== 'O') return;
+spinner.style.display = 'block';
+
+const thinkTime = Math.random() * 300; // <-- New line
+
+setTimeout(() => {
   const moves = getAvailableMoves();
-  let bestEval = -Infinity, bestMove = null;
+  let blockMove = null;
+  let winMove = null;
+  const safeMoves = [];
+  const riskyMoves = [];
 
   for (const move of moves) {
     const temp = simulateMove(move, playerOMark);
-    forcedBoard = temp.newForcedBoard;
-    const evalScore = minimax(3, false);
+    if (checkSmallBoardWin(move.boardIndex) === playerOMark) {
+      winMove = move;
+    }
     undoMove(move, temp);
-    if (evalScore > bestEval) {
-      bestEval = evalScore;
-      bestMove = move;
+
+    const tempEnemy = simulateMove(move, playerXMark);
+    if (checkSmallBoardWin(move.boardIndex) === playerXMark) {
+      blockMove = move;
+    }
+    undoMove(move, tempEnemy);
+
+    if (isDangerousMove(move)) {
+      riskyMoves.push(move);
+    } else {
+      safeMoves.push(move);
     }
   }
 
-  if (bestMove) setTimeout(() => bestMove.element.click(), 300);
-}
+  let selectedMove = null;
 
-function flashScreen() {
-  const flash = document.createElement('div');
-  flash.style.position = 'fixed';
-  flash.style.top = 0;
-  flash.style.left = 0;
-  flash.style.width = '100%';
-  flash.style.height = '100%';
-  flash.style.background = 'rgba(255, 255, 255, 0.3)';
-  flash.style.zIndex = 9999;
-  flash.style.animation = 'flashFade 0.5s forwards';
-  document.body.appendChild(flash);
-  setTimeout(() => flash.remove(), 500);
-}
-
-function confettiShower(mark) {
-  const container = document.createElement('div');
-  container.id = 'confettiContainer';
-  document.body.appendChild(container);
-  for (let i = 0; i < 50; i++) {
-    const confetti = document.createElement('span');
-    confetti.classList.add('confetti');
-    confetti.textContent = mark;
-    confetti.style.left = Math.random() * 100 + 'vw';
-    confetti.style.animationDelay = Math.random() + 's';
-    confetti.style.fontSize = (20 + Math.random() * 20) + 'px';
-    container.appendChild(confetti);
+  if (blockMove) {
+    selectedMove = blockMove;
+  } else if (winMove) {
+    selectedMove = winMove;
+  } else if (safeMoves.length > 0) {
+    selectedMove = safeMoves.find(m => m.cellIndex === 4) || 
+                   safeMoves.find(m => [0,2,6,8].includes(m.cellIndex)) || 
+                   safeMoves[0];
+  } else if (riskyMoves.length > 0) {
+    selectedMove = riskyMoves.find(m => m.cellIndex === 4) || 
+                   riskyMoves.find(m => [0,2,6,8].includes(m.cellIndex)) || 
+                   riskyMoves[0];
   }
-  setTimeout(() => container.remove(), 5000);
-}
 
+  if (selectedMove) selectedMove.element.click();
+  spinner.style.display = 'none';
+}, thinkTime);
+}
 function handleCellClick(e) {
   const cell = e.target;
   const smallBoardDiv = cell.parentElement;
@@ -361,6 +430,7 @@ function handleCellClick(e) {
 
   if ((forcedBoard !== null && boardIndex !== forcedBoard) || boardWinners[boardIndex] !== null || boards[boardIndex][cellIndex] !== null) return;
 
+  playClick();
   const mark = (currentPlayer === 'X') ? playerXMark : playerOMark;
   boards[boardIndex][cellIndex] = mark;
   cell.textContent = mark;
@@ -371,14 +441,15 @@ function handleCellClick(e) {
     boardWinners[boardIndex] = smallWinner;
     smallBoardDiv.innerHTML = `<div class='board-winner'>${smallWinner === 'draw' ? '' : smallWinner}</div>`;
     smallBoardDiv.classList.add('completed');
+    if (smallWinner === 'draw') playDraw();
   }
 
   const bigWinner = checkBigBoardWin();
   if (bigWinner) {
     document.getElementById('message').textContent = `${bigWinner} wins the game!`;
     confettiShower(bigWinner);
-    flashScreen();
-    document.querySelectorAll('.cell').forEach(cell => cell.removeEventListener('click', handleCellClick));
+    if (bigWinner === playerXMark) playWin();
+    else playLose();
     return;
   }
 
@@ -387,7 +458,7 @@ function handleCellClick(e) {
   currentPlayer = (currentPlayer === 'X') ? 'O' : 'X';
   document.getElementById('message').textContent = `Current turn: ${(currentPlayer === 'X' ? playerXMark : playerOMark)}${forcedBoard === null ? '. Choose any active board.' : `. Must play in board ${forcedBoard + 1}.`}`;
 
-  if (gameMode === 'vsComputer' && currentPlayer === 'O') setTimeout(computerMove, 300);
+  if (gameMode === 'vsComputer' && currentPlayer === 'O') computerMove();
 }
 
 function resetGame() {
@@ -400,6 +471,7 @@ function resetGame() {
   currentPlayer = 'X';
   forcedBoard = null;
   boardWinners.fill(null);
+  boards.length = 0;
   initBoards();
   buildBoard();
   updateForcedHighlight();
@@ -414,6 +486,5 @@ initBoards();
 buildBoard();
 updateForcedHighlight();
 </script>
-
 </body>
 </html>
